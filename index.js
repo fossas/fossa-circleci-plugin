@@ -55,7 +55,7 @@ function run () {
 		process.exit(0) 	// Success!
 	})
 	.catch(function (err) {
-		console.error('Error getting FOSSA build data. Error: ' + err.toString())
+		console.error('Error getting FOSSA build data: ' + err.toString())
 		process.exit(1)
 	})
 }
@@ -89,7 +89,7 @@ function pollFOSSABuildResults () {
 
 	return poll().timeout(POLL_TIMEOUT) // total timeout time of 30 minutes
 	.catch(function (err) {
-		console.error('Could not find FOSSA Build after 30 minutes')
+		console.error('Error fetching FOSSA build: ' + err.toString())
 		process.exit(1)
 	}) 
 	
@@ -117,7 +117,7 @@ function pollFOSSAScanResults () {
 
 	return poll().timeout(POLL_TIMEOUT)
 	.catch(function (err) {
-		console.error('Could not find FOSSA Scan after 30 minutes')
+		console.error('Error fetching FOSSA scan: ' + err.toString())
 		process.exit(1)
 	})
 }
