@@ -70,12 +70,19 @@ function pollFOSSABuildResults () {
 		})
 		.then(function (response) {
 			var build_data = JSON.parse(response.body)
-			var found_build = _.find(build_data, function (build) {
-				return build.locator === full_fossa_locator
+			var found_builds = _.filter(build_data, function (build) {
+				return (build.locator === full_fossa_locator) && (build.finished)
 			})
-
 			var completed_build = false
-			if (found_build) {
+			if (found_builds.length) {
+				// sort by finished desc, and pick latest
+				var found_build = _.first(
+					found_builds.sort(function (a, b) {
+						var a_date = new Date(a.finished)
+						var b_date = new Date(b.finished)
+						return b_date.getTime() - a_date.getTime()
+					})
+				)
 				completed_build = (found_build.status && found_build.status !== 'RUNNING') //Build is not null and either FAILED or SUCCEEDED
 			}
 			// if no build has been found yet, or it is still queued/running wait then ping URL again
