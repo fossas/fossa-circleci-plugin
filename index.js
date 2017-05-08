@@ -21,10 +21,10 @@ function setup () {
 		process.exit(1)
 	}
 
-	api_base_url = 'http://4e7e5833.ngrok.io/'
+	api_base_url = process.env['FOSSA_ENDPOINT_URL'] || 'http://app.fossa.io/'
 	// Get project information from CircleCI Environment variables
-	fossa_project_id = 'git+' + process.env['CIRCLE_REPOSITORY_URL'].toString()
-	full_fossa_locator = fossa_project_id + '$' + process.env['CIRCLE_SHA1'].toString()
+	fossa_project_id = 'git+' + process.env['CIRCLE_REPOSITORY_URL']
+	full_fossa_locator = fossa_project_id + '$' + process.env['CIRCLE_SHA1']
 
 	// Build the FOSSA endpoint URL's
 	build_endpoint = url.parse(url.resolve(api_base_url, '/api/builds'), true)
@@ -36,7 +36,7 @@ function setup () {
 
 	// API Access token to access FOSSA API
 	request_headers = {
-		Authorization: 'token ' + process.env['FOSSA_API_TOKEN'].toString()
+		Authorization: 'token ' + process.env['FOSSA_API_TOKEN']
 	}
 }
 

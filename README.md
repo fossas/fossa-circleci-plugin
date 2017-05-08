@@ -12,3 +12,7 @@
 	```
 
 4. (optional) Set a timeout for pinging the FOSSA API. By default, timeout is 30 minutes. This can be set via the Environment variable: `FOSSA_POLL_TIMEOUT`. You must specify in milliseconds, ex: `1000 * 60 * 30` (30 minutes)
+
+## Dev
+
+You can set a custom fossa endpoint url as well with Env variable: `FOSSA_ENDPOINT_URL`
