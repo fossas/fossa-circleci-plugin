@@ -8,7 +8,7 @@
 	```
 		test:
 		  pre:
-		    -node <fossa plugin location>/index.js
+		    -cd <fossa_plugin_location> && npm i && node index.js
 	```
 
 4. (optional) Set a timeout for pinging the FOSSA API. By default, timeout is 30 minutes. This can be set via the Environment variable: `FOSSA_POLL_TIMEOUT`. You must specify in milliseconds, ex: `1000 * 60 * 30` (30 minutes)
