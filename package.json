@@ -1,0 +1,24 @@
+{
+  "name": "fossa-circleci-plugin",
+  "version": "1.0.0",
+  "description": "CircleCI script that checks if FOSSA has successfully scanned for issues on a revision",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FOSSAS/fossa-circleci-plugin.git"
+  },
+  "author": "Alex Nuccio",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FOSSAS/fossa-circleci-plugin/issues"
+  },
+  "homepage": "https://github.com/FOSSAS/fossa-circleci-plugin#readme",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "request": "^2.81.0",
+    "underscore": "^1.8.3"
+  }
+}
