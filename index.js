@@ -14,6 +14,16 @@ var build_endpoint
 var scan_endpoint
 var request_headers
 
+function getResource (url) {
+	return request.getAsync({
+		url: url,
+		method: 'GET',
+		headers: request_headers
+	})
+	.then(function (response) {
+		return JSON.parse(response.body)
+	})
+}
 
 function setup () {
 	if (!process.env['FOSSA_API_TOKEN']) {
@@ -27,11 +37,8 @@ function setup () {
 	full_fossa_locator = fossa_project_id + '$' + process.env['CIRCLE_SHA1']
 
 	// Build the FOSSA endpoint URL's
-	build_endpoint = url.parse(url.resolve(api_base_url, '/api/builds'), true)
-	build_endpoint.query = {
-		projectId: fossa_project_id
-	}
-	build_endpoint = url.format(build_endpoint)
+	queue_build_endpoint = url.resolve(api_base_url, '/api/revisions/build')
+	build_endpoint = url.resolve(api_base_url, '/api/builds')
 	scan_endpoint = url.resolve(api_base_url, '/api/revisions/' + encodeURIComponent(full_fossa_locator))
 
 	// API Access token to access FOSSA API
@@ -41,7 +48,15 @@ function setup () {
 }
 
 function run () {
-	return pollFOSSABuildResults()
+	return queueFOSSABuild()
+	.then(function (build) {
+		if (!build.id) {
+			console.error('Build queue failed')
+			process.exit(1)
+		}
+		if (build.status && build.status !== 'RUNNING') return build
+		return pollFOSSABuildResults(build.id)
+	})
 	.then(function (build) {
 		if (build.status === 'FAILED') throw new Error('FOSSA Build failed. Build error: ' + (build.error || '') )
 
@@ -61,36 +76,18 @@ function run () {
 }
 
 // This function will ping the FOSSA API for build data on the current SHA1 of the build. It will keep pinging this URL for 30 minutes
-function pollFOSSABuildResults () {
+function pollFOSSABuildResults (build_id) {
+	console.log("Polling FOSSA build: " + build_id)
 	function poll () {
-		return request.getAsync({
-			url: build_endpoint,
-			method: 'GET',
-			headers: request_headers
-		})
-		.then(function (response) {
-			var build_data = JSON.parse(response.body)
-			var found_builds = _.filter(build_data, function (build) {
-				return (build.locator === full_fossa_locator) && (build.finished)
-			})
-			var completed_build = false
-			if (found_builds.length) {
-				// sort by finished desc, and pick latest
-				var found_build = _.first(
-					found_builds.sort(function (a, b) {
-						var a_date = new Date(a.finished)
-						var b_date = new Date(b.finished)
-						return b_date.getTime() - a_date.getTime()
-					})
-				)
-				completed_build = (found_build.status && found_build.status !== 'RUNNING') //Build is not null and either FAILED or SUCCEEDED
-			}
+		return getResource(build_endpoint + '/' + build_id)
+		.then(function (build_data) {
+			var completed_build = (build_data.status && build_data.status !== 'RUNNING') //Build is not null and either FAILED or SUCCEEDED
 			// if no build has been found yet, or it is still queued/running wait then ping URL again
 			if (!completed_build) {
 				return Promise.delay(PING_WAIT_TIME).then(poll)
 			}
 
-			return found_build
+			return build_data
 		})
 	}
 
@@ -103,14 +100,10 @@ function pollFOSSABuildResults () {
 }
 
 function pollFOSSAScanResults () {
+	console.log("Checking FOSSA for resolved revision.")
 	function poll () {
-		return request.getAsync({
-			url: scan_endpoint,
-			method: 'GET',
-			headers: request_headers
-		})
-		.then(function (response) {
-			var scan_data = JSON.parse(response.body)
+		return getResource(scan_endpoint)
+		.then(function (scan_data) {
 			var scanned_revision = (scan_data.unresolved_issue_count !== null)
 			
 			// if issue count hasn't been set, then the revision still needs to be scanned
@@ -126,6 +119,21 @@ function pollFOSSAScanResults () {
 	.catch(function (err) {
 		console.error('Error fetching FOSSA scan: ' + err.toString())
 		process.exit(1)
+	})
+}
+
+function queueFOSSABuild () {
+	console.log("Queuing a FOSSA build.")
+	return request.postAsync({
+		url: queue_build_endpoint,
+		method: 'POST',
+		headers: request_headers,
+		json: {
+			locator: full_fossa_locator
+		}
+	})
+	.then(function (response) {
+		return response.body
 	})
 }
 
