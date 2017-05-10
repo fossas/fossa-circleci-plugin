@@ -130,7 +130,7 @@ function queueFOSSABuild () {
 		headers: request_headers
 	})
 	.then(function (response) {
-		return response.body
+		return JSON.parse(response.body)
 	})
 }
 
