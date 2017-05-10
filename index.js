@@ -37,7 +37,7 @@ function setup () {
 	full_fossa_locator = fossa_project_id + '$' + process.env['CIRCLE_SHA1']
 
 	// Build the FOSSA endpoint URL's
-	queue_build_endpoint = url.resolve(api_base_url, '/api/revisions/build')
+	queue_build_endpoint = url.resolve(api_base_url, '/api/revisions/' + encodeURIComponent(full_fossa_locator) + '/build')
 	build_endpoint = url.resolve(api_base_url, '/api/builds')
 	scan_endpoint = url.resolve(api_base_url, '/api/revisions/' + encodeURIComponent(full_fossa_locator))
 
@@ -124,13 +124,10 @@ function pollFOSSAScanResults () {
 
 function queueFOSSABuild () {
 	console.log("Queuing a FOSSA build.")
-	return request.postAsync({
+	return request.putAsync({
 		url: queue_build_endpoint,
-		method: 'POST',
-		headers: request_headers,
-		json: {
-			locator: full_fossa_locator
-		}
+		method: 'PUT',
+		headers: request_headers
 	})
 	.then(function (response) {
 		return response.body
