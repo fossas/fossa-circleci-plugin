@@ -77,7 +77,7 @@ function run () {
 
 // This function will ping the FOSSA API for build data on the current SHA1 of the build. It will keep pinging this URL for 30 minutes
 function pollFOSSABuildResults (build_id) {
-	console.log("Polling FOSSA build: " + build_id)
+	console.log("Polling FOSSA build: " + build_id + '...')
 	function poll () {
 		return getResource(build_endpoint + '/' + build_id)
 		.then(function (build_data) {
@@ -100,7 +100,7 @@ function pollFOSSABuildResults (build_id) {
 }
 
 function pollFOSSAScanResults () {
-	console.log("Checking FOSSA for resolved revision.")
+	console.log("Polling FOSSA for resolved revision.")
 	function poll () {
 		return getResource(scan_endpoint)
 		.then(function (scan_data) {
