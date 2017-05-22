@@ -31,7 +31,7 @@ function setup () {
 		process.exit(1)
 	}
 
-	api_base_url = process.env['FOSSA_ENDPOINT_URL'] || 'http://app.fossa.io/'
+	api_base_url = process.env['FOSSA_ENDPOINT_URL'] || 'https://app.fossa.io/'
 	// Get project information from CircleCI Environment variables
 	fossa_project_id = 'git+' + process.env['CIRCLE_REPOSITORY_URL']
 	full_fossa_locator = fossa_project_id + '$' + process.env['CIRCLE_SHA1']
